@@ -24,13 +24,13 @@
 include sources.mk
 
 # Paths
-INC_COMMON = ${INCLUDES}/common/
+INC_COMMON = ${INCLUDES}/common/ # ../include/common/ ??
 INC_MSP    = ${INCLUDES}/msp432/
 INC_CMSIS  = ${INCLUDES}/CMSIS/
 INC =
 
 # Platform Overrides
-PLATFORM = MSP432
+PLATFORM = HOME
 
 # Architectures Specific Flags
 LINKER_FILE = msp432p401r.lds
@@ -57,7 +57,7 @@ debug =
 I_FILES = $(SOURCES:.c=.i)
 
 ifeq ($(PLATFORM),MSP432)
-	CC = arm-none-eabi-gcc
+	CC = gcc
 	CFLAGS = ${GFLAGS} ${MSPFLAGS} -DMSP432
 	SRCS = ${SOURCES_MSP}
 	LDFLAGS = -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
@@ -71,6 +71,7 @@ else
 	CFLAGS = ${GFLAGS} -DHOST
 	SRCS = ${SOURCES_HOME}
 	INC = ${INC_COMMON}
+	LDFLAGS = 
 # etc
 endif
 

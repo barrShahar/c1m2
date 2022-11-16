@@ -19,5 +19,5 @@ SOURCES_HOME = main.c  \
               memory.c 
 
 # Add your include paths to this variable
-INCLUDES = /Users/shaharbarr/Desktop/m2/include
+INCLUDES = /../include
 
