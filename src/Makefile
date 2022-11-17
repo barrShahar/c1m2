@@ -24,16 +24,14 @@
 include sources.mk
 
 # Paths
-INC_COMMON = ${INCLUDES}/common/ # ../include/common/ ??
-INC_MSP    = ${INCLUDES}/msp432/
-INC_CMSIS  = ${INCLUDES}/CMSIS/
+
 INC =
 
 # Platform Overrides
-PLATFORM = HOME
+PLATFORM = MSP432
 
 # Architectures Specific Flags
-LINKER_FILE = msp432p401r.lds
+LINKER_FILE = ${LINKER_PATH}msp432p401r.lds
 CPU = 
 ARCH = 
 SPECS = 
@@ -50,21 +48,23 @@ MSPFLAGS = -mcpu=$(CPU) -m${ARCH} -march=armv7e-m \
 CPPFLAGs = 
 
 # Additional variables variables
-TARGET = c1m2.out
+TARGET = c1m2
 SRCS =
 debug = 
 
 I_FILES = $(SOURCES:.c=.i)
 
 ifeq ($(PLATFORM),MSP432)
-	CC = gcc
+	CC = arm-none-eabi-gcc
 	CFLAGS = ${GFLAGS} ${MSPFLAGS} -DMSP432
 	SRCS = ${SOURCES_MSP}
 	LDFLAGS = -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
 	CPU = cortex-m4
 	ARCH = thumb
 	SPECS = nosys.specs
-	INC = -I${INC_COMMON} -I${INC_MSP}
+	INC = ${INC_COMMON} ${INC_MSP} ${INC_CMSIS}
+
+
 # etc
 else
 	CC = gcc
@@ -76,6 +76,8 @@ else
 endif
 
 OBJS = $(SRCS:.c=.o)
+OBJDEB = $(SRCS:.c=.d)
+
 # ifeq (${PLATFORM}, HOME):
 # 	debug = cat memory.c
 # endif
@@ -83,29 +85,30 @@ OBJS = $(SRCS:.c=.o)
 
 .PHONY debug:
 debug:
-	echo ${LDFLAGS}
+	echo ${MSPFLAGS}
 
 .PHONY build:
-build : ${TARGET}
+build : ${TARGET}.out ${TARGET}.map
 
-.PHONY Build:
-Build: ${TARGET}
 
-${TARGET} : ${OBJS}
-	gcc ${LDFLAGS} ${OBJS}  -o $@ 
+${TARGET}.out : ${OBJS} ${OBJDEB}
+	${CC} ${CFLAGS} ${LDFLAGS} ${OBJS}  -o $@ 
 
 .PHONY compile-all:
 compile-all: ${OBJS}
 
 
 %.o : %.c 
-	${CC} -I${INC_COMMON} ${CFLAGS} -c $< 
+	${CC} ${INC} ${CFLAGS} -c $< 
 %.i : %.c 
-	${CC} -I${INC_COMMON} ${CFLAGS} -E $< -o $@
+	${CC} ${INC} ${CFLAGS} -E $< -o $@
 
 %.asm : %.c # do you need INC_COMMON? 
 	${CC} ${INC} ${CFLAGS} -S $< -o $@
 
+%.d : %.c 
+	${CC} ${INC} ${CFLAGS} -M $< -o $@
+
 .PHONY clean:
 clean:
-	rm -f *.o *.i *.asm ${TARGET}.out ${TARGET}.map
+	rm -f *.o *.i *.asm *.d ${TARGET}.out ${TARGET}.map
