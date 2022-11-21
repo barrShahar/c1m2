@@ -28,7 +28,7 @@ include sources.mk
 INC =
 
 # Platform Overrides
-PLATFORM = MSP432
+PLATFORM = HOME
 
 # Architectures Specific Flags
 LINKER_FILE = ${LINKER_PATH}msp432p401r.lds
@@ -71,7 +71,7 @@ else
 	CFLAGS = ${GFLAGS} -DHOST
 	SRCS = ${SOURCES_HOME}
 	INC = ${INC_COMMON}
-	LDFLAGS = 
+	LDFLAGS = -Xlinker -Map=${TARGET}.map
 # etc
 endif
 
@@ -85,14 +85,14 @@ OBJDEB = $(SRCS:.c=.d)
 
 .PHONY debug:
 debug:
-	echo ${MSPFLAGS}
+	${CC} ${INC}  ${SRCS} ${CFLAGS} ${LDFLAGS}
 
 .PHONY build:
 build : ${TARGET}.out ${TARGET}.map
 
 
 ${TARGET}.out : ${OBJS} ${OBJDEB}
-	${CC} ${CFLAGS} ${LDFLAGS} ${OBJS}  -o $@ 
+	${CC} ${INC} ${CFLAGS} ${OBJS} -o $@ ${LDFLAGS}
 
 .PHONY compile-all:
 compile-all: ${OBJS}
